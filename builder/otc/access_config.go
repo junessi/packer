@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/gophercloud/gophercloud"
-	"github.com/gophercloud/gophercloud/openstack"
+	opentelekomcloud "github.com/cricketlong/otc-sdk-go"
+	"github.com/cricketlong/otc-sdk-go/otc"
 	"github.com/mitchellh/packer/template/interpolate"
 )
 
@@ -25,7 +25,7 @@ type AccessConfig struct {
 	Region           string `mapstructure:"region"`
 	EndpointType     string `mapstructure:"endpoint_type"`
 
-	osClient *gophercloud.ProviderClient
+	osClient *opentelekomcloud.ProviderClient
 }
 
 func (c *AccessConfig) Prepare(ctx *interpolate.Context) []error {
@@ -55,7 +55,7 @@ func (c *AccessConfig) Prepare(ctx *interpolate.Context) []error {
 	}
 
 	// Get as much as possible from the end
-	ao, _ := openstack.AuthOptionsFromEnv()
+	ao, _ := otc.AuthOptionsFromEnv()
 
 	// Make sure we reauth as needed
 	ao.AllowReauth = true
@@ -80,7 +80,7 @@ func (c *AccessConfig) Prepare(ctx *interpolate.Context) []error {
 	}
 
 	// Build the client itself
-	client, err := openstack.NewClient(ao.IdentityEndpoint)
+	client, err := otc.NewClient(ao.IdentityEndpoint)
 	if err != nil {
 		return []error{err}
 	}
@@ -94,7 +94,7 @@ func (c *AccessConfig) Prepare(ctx *interpolate.Context) []error {
 	}
 
 	// Auth
-	err = openstack.Authenticate(client, ao)
+	err = otc.Authenticate(client, ao)
 	if err != nil {
 		return []error{err}
 	}
@@ -103,26 +103,26 @@ func (c *AccessConfig) Prepare(ctx *interpolate.Context) []error {
 	return nil
 }
 
-func (c *AccessConfig) computeV2Client() (*gophercloud.ServiceClient, error) {
-	return openstack.NewComputeV2(c.osClient, gophercloud.EndpointOpts{
+func (c *AccessConfig) computeV2Client() (*opentelekomcloud.ServiceClient, error) {
+	return otc.NewComputeV2(c.osClient, opentelekomcloud.EndpointOpts{
 		Region:       c.Region,
 		Availability: c.getEndpointType(),
 	})
 }
 
-func (c *AccessConfig) imageV2Client() (*gophercloud.ServiceClient, error) {
-	return openstack.NewImageServiceV2(c.osClient, gophercloud.EndpointOpts{
+func (c *AccessConfig) imageV2Client() (*opentelekomcloud.ServiceClient, error) {
+	return otc.NewImageServiceV2(c.osClient, opentelekomcloud.EndpointOpts{
 		Region:       c.Region,
 		Availability: c.getEndpointType(),
 	})
 }
 
-func (c *AccessConfig) getEndpointType() gophercloud.Availability {
+func (c *AccessConfig) getEndpointType() opentelekomcloud.Availability {
 	if c.EndpointType == "internal" || c.EndpointType == "internalURL" {
-		return gophercloud.AvailabilityInternal
+		return opentelekomcloud.AvailabilityInternal
 	}
 	if c.EndpointType == "admin" || c.EndpointType == "adminURL" {
-		return gophercloud.AvailabilityAdmin
+		return opentelekomcloud.AvailabilityAdmin
 	}
-	return gophercloud.AvailabilityPublic
+	return opentelekomcloud.AvailabilityPublic
 }

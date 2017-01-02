@@ -5,7 +5,7 @@ import (
 	"log"
 
 	opentelekomcloud "github.com/cricketlong/otc-sdk-go"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/images"
+	"github.com/cricketlong/otc-sdk-go/otc/images"
 )
 
 // Artifact is an artifact implementation that contains built images.
